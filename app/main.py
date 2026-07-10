@@ -1,19 +1,21 @@
 from fastapi import FastAPI
+from app.core.settings import settings
 
 app = FastAPI(
-    title="AI Project Understanding Assistant",
-    description="Backend API for analyzing and understanding software projects.",
-    version="0.1.0"
+    title=settings.app_name,
+    version=settings.app_version,
 )
 
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to AI Project Understanding Assistant"}
+    return {
+        "message": f"Welcome to {settings.app_name}"
+    }
 
 
 @app.get("/health")
 def health_check():
     return {
         "status": "healthy"
-    }
+    }       
