@@ -8,6 +8,7 @@ from app.services.upload_service import (
 
 from app.services.file_reader import read_repository
 from app.services.analyzer import analyze_repository
+from app.services.prompt_builder import build_project_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +21,10 @@ router = APIRouter(
 @router.post("/")
 async def upload_repository(file: UploadFile = File(...)):
     """
-    Upload and analyze a repository.
+    Upload, analyze and prepare an AI prompt.
     """
 
     if not file.filename.endswith(".zip"):
-        logger.warning("Non-ZIP file uploaded.")
 
         raise HTTPException(
             status_code=400,
@@ -42,6 +42,11 @@ async def upload_repository(file: UploadFile = File(...)):
         project_files,
     )
 
-    logger.info("Repository analyzed successfully.")
+    prompt = build_project_prompt(analysis)
 
-    return analysis
+    logger.info("Prompt generated successfully.")
+
+    return {
+        "analysis": analysis,
+        "prompt": prompt
+    }
