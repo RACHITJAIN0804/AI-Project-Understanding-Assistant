@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+import logging
+
 from app.core.settings import settings
 from app.core.logging import configure_logging
-
-import logging
+from app.api.router import api_router
 
 configure_logging()
 
@@ -15,19 +16,4 @@ app = FastAPI(
 
 logger.info("Application started successfully.")
 
-@app.get("/")
-def root():
-    logger.info("Root endpoint accessed.")
-
-    return {
-        "message": f"Welcome to {settings.app_name}"
-    }
-
-
-@app.get("/health")
-def health_check():
-    logger.info("Health check endpoint accessed.")
-
-    return {
-        "status": "healthy"
-    }
+app.include_router(api_router)
