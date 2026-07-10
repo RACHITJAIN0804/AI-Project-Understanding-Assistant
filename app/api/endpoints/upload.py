@@ -7,6 +7,7 @@ from app.services.upload_service import (
 )
 
 from app.services.file_reader import read_repository
+from app.services.analyzer import analyze_repository
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,11 @@ router = APIRouter(
 
 @router.post("/")
 async def upload_repository(file: UploadFile = File(...)):
+    """
+    Upload and analyze a repository.
+    """
 
     if not file.filename.endswith(".zip"):
-
         logger.warning("Non-ZIP file uploaded.")
 
         raise HTTPException(
@@ -34,14 +37,11 @@ async def upload_repository(file: UploadFile = File(...)):
 
     project_files = read_repository(extracted_path)
 
-    logger.info("Repository processed successfully.")
+    analysis = analyze_repository(
+        extracted_path,
+        project_files,
+    )
 
-    return {
-        "message": "Repository uploaded successfully.",
-        "repository": saved_file.name,
-        "files_found": len(project_files),
-        "files": [
-            file["path"]
-            for file in project_files
-        ]
-    }
+    logger.info("Repository analyzed successfully.")
+
+    return analysis
