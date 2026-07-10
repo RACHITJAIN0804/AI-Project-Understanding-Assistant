@@ -14,7 +14,7 @@ EXTRACT_DIR.mkdir(exist_ok=True)
 
 def save_uploaded_file(file) -> Path:
     """
-    Save uploaded ZIP file.
+    Save the uploaded ZIP file to the uploads directory.
     """
 
     file_path = UPLOAD_DIR / file.filename
@@ -27,21 +27,32 @@ def save_uploaded_file(file) -> Path:
     return file_path
 
 
-def extract_zip(zip_path: Path):
+def extract_zip(zip_path: Path) -> Path:
     """
-    Extract uploaded ZIP archive.
+    Extract the uploaded ZIP archive.
     """
 
     extract_folder = EXTRACT_DIR / zip_path.stem
 
+    # Remove old extracted folder if it exists
     if extract_folder.exists():
-        shutil.rmtree(extract_folder)
+        try:
+            shutil.rmtree(extract_folder)
+            logger.info(f"Removed old extracted folder: {extract_folder}")
+        except PermissionError:
+            logger.error(
+                f"Permission denied while deleting '{extract_folder}'. "
+                "Close any programs using this folder and try again."
+            )
+            raise
 
-    extract_folder.mkdir(parents=True)
+    # Create a fresh extraction directory
+    extract_folder.mkdir(parents=True, exist_ok=True)
 
+    # Extract ZIP
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(extract_folder)
 
-    logger.info(f"Extracted to {extract_folder}")
+    logger.info(f"Repository extracted to: {extract_folder}")
 
     return extract_folder
