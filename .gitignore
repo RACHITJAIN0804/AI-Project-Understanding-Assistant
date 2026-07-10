@@ -17,3 +17,7 @@ Thumbs.db
 htmlcov/
 
 *.log
+
+logs/
+uploads/
+extracted/
