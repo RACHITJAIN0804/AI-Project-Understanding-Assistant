@@ -1,17 +1,17 @@
+from app.core.custom_exceptions import PromptGenerationError
+
+
 def build_project_prompt(analysis: dict) -> str:
-    """
-    Build a structured prompt for the AI model.
-    """
+    try:
+        languages = ", ".join(analysis["languages"])
 
-    languages = ", ".join(analysis["languages"])
+        config_files = (
+            ", ".join(analysis["configuration_files"])
+            if analysis["configuration_files"]
+            else "None"
+        )
 
-    config_files = (
-        ", ".join(analysis["configuration_files"])
-        if analysis["configuration_files"]
-        else "None"
-    )
-
-    prompt = f"""
+        prompt = f"""
 You are an expert software engineer.
 
 Analyze the following software project.
@@ -56,4 +56,10 @@ Your tasks:
 Return the explanation in clear English suitable for a beginner.
 """
 
-    return prompt.strip()
+        return prompt.strip()
+
+    except KeyError as e:
+        raise PromptGenerationError(f"Missing required analysis field: {e}")
+
+    except Exception as e:
+        raise PromptGenerationError(f"Failed to generate project prompt: {e}")
