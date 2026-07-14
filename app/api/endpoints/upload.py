@@ -1,15 +1,17 @@
 from fastapi import APIRouter, UploadFile, File
 import logging
 
-from app.core.custom_exceptions import InvalidFileError
 from app.services.upload_service import (
     save_uploaded_file,
     extract_zip,
 )
+
 from app.services.file_reader import read_repository
 from app.services.analyzer import analyze_repository
+from app.services.context_builder import build_project_context
 from app.services.prompt_builder import build_project_prompt
 from app.services.ai.gemini_service import explain_project
+from app.core.custom_exceptions import InvalidFileTypeError
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +23,9 @@ router = APIRouter(
 
 @router.post("/")
 async def upload_repository(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".zip"):
+    if not file.filename.endswith(".zip"):
         logger.warning("Non-ZIP file uploaded.")
-        raise InvalidFileError("Only ZIP files are allowed.")
+        raise InvalidFileTypeError()
 
     saved_file = save_uploaded_file(file)
 
@@ -36,7 +38,12 @@ async def upload_repository(file: UploadFile = File(...)):
         project_files,
     )
 
-    prompt = build_project_prompt(analysis)
+    project_context = build_project_context(project_files)
+
+    prompt = build_project_prompt(
+        analysis,
+        project_context,
+    )
 
     logger.info("Prompt generated successfully.")
 

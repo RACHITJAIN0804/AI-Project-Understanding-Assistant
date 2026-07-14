@@ -16,6 +16,7 @@ class InvalidRepositoryError(ProjectAssistantException):
     pass
 
 
+
 class RepositoryReadError(ProjectAssistantException):
     pass
 
